@@ -4,6 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -87,6 +88,14 @@ struct thread
     enum thread_status status;          /* Thread state. */
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
+    /*#### 我的修改 ####*/
+ // int64_t wakeup_tick;              /*保存睡眠时间*/
+    int old_priority;
+    struct list locks;                   //the list of locks that it holds
+    bool donated;
+    struct lock *blocked;                  //阻塞该线程的锁
+    int64_t block_ticks; 
+    /*#### 我的修改 ####*/
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 

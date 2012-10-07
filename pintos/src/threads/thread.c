@@ -239,6 +239,7 @@ thread_block (void)
 void
 thread_unblock (struct thread *t) 
 {
+  /*old
   enum intr_level old_level;
 
   ASSERT (is_thread (t));
@@ -248,6 +249,14 @@ thread_unblock (struct thread *t)
   list_push_back (&ready_list, &t->elem);
   t->status = THREAD_READY;
   intr_set_level (old_level);
+  */
+    enum intr_level old_level;
+    ASSERT(is_thread(t));
+    old_level = intr_disable();
+    ASSERT(t->status == THREAD_BLOCKED);
+    list_insert_ordered(&ready_list, &t->list, pri_more, NULL);
+    t->status = THREAD_READY;
+    intr_set_level(old_level);
 }
 
 /* Returns the name of the running thread. */
