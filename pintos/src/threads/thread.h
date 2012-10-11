@@ -6,6 +6,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+ /*#### 我的修改 ####*/
+#include "threads/synch.h"
+
+void sort_thread_list (struct list *);
+void thread_set_priority_other (struct thread *, int , bool );
+void thread_set_priority (int ) ;
+ /*#### 我的修改 ####*/
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -88,6 +95,7 @@ struct thread
     enum thread_status status;          /* Thread state. */
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
+    
     /*#### 我的修改 ####*/
  // int64_t wakeup_tick;              /*保存睡眠时间*/
     int old_priority;
@@ -96,6 +104,7 @@ struct thread
     struct lock *blocked;                  //阻塞该线程的锁
     int64_t block_ticks; 
     /*#### 我的修改 ####*/
+    
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 

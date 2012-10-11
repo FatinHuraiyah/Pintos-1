@@ -452,9 +452,18 @@ list_insert_ordered (struct list *list, struct list_elem *elem,
   ASSERT (elem != NULL);
   ASSERT (less != NULL);
 
+
+  
+  e = list_begin (list);
+
+
+ 
+  ASSERT (is_interior (e) || is_tail (e));
+     
   for (e = list_begin (list); e != list_end (list); e = list_next (e))
     if (less (elem, e, aux))
       break;
+   
   return list_insert (e, elem);
 }
 
