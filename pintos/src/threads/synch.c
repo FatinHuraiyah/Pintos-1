@@ -204,7 +204,7 @@ lock_init (struct lock *lock)
   lock->holder = NULL;
   sema_init (&lock->semaphore, 1);
   /*我的修改*/
-  lock->lock_priority = PRI_MIN -  1;
+  lock->lock_priority = PRI_MIN - 1;
 
   /*==我的修改*/
 }
