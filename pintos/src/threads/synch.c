@@ -34,6 +34,7 @@
 
 /*我的修改*/
 static bool outstanding_priority(const struct list_elem *lhs, const struct list_elem *rhs, void *aux);
+static bool cond_priority (const struct list_elem *lsm, const struct list_elem *rsm, void *aux);
 /*==我的修改*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
@@ -395,12 +396,28 @@ cond_wait (struct condition *cond, struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
   
   sema_init (&waiter.semaphore, 0);
+  /*我的修改*/
+  waiter.sema_priority = thread_current()->priority;
+  list_insert_ordered (&cond->waiters, &waiter.elem, cond_priority, NULL);
+  /*==我的修改*/
+  /*old
   list_push_back (&cond->waiters, &waiter.elem);
+  */
   lock_release (lock);
   sema_down (&waiter.semaphore);
   lock_acquire (lock);
 }
 
+static bool
+cond_priority (const struct list_elem *lsm, const struct list_elem *rsm, void *aux UNUSED)
+{
+    struct semaphore_elem *s1, *s2;
+    s1 = list_entry (lsm, struct semaphore_elem, elem);
+    s2 = list_entry (rsm, struct semaphore_elem, elem);
+    
+    return s1->sema_priority > s2->sema_priority;
+
+}
 /* If any threads are waiting on COND (protected by LOCK), then
    this function signals one of them to wake up from its wait.
    LOCK must be held before calling this function.
