@@ -1,3 +1,6 @@
+/*我的修改*/
+#include "threads/fixed-point.h"
+/*==我的修改*/
 #include "threads/thread.h"
 #include <debug.h>
 #include <stddef.h>
@@ -236,6 +239,9 @@ thread_create (const char *name, int priority,
 
   /*我的修改*/
   
+  if (thread_mlfqs)
+    thread_calculate_priority_other (t);
+
   if (priority > thread_current()->priority)
     thread_yield_head (thread_current ()); 
   /*==我的修改*/
@@ -439,37 +445,126 @@ thread_get_priority (void)
   return thread_current ()->priority;
 }
 
+/*我的修改*/
 /* Sets the current thread's nice value to NICE. */
 void
-thread_set_nice (int nice UNUSED) 
+thread_set_nice (int nice ) 
 {
-  /* Not yet implemented. */
+    ASSERT (nice > NICE_MIN && nice < NICE_MAX);
+
+    struct thread *curr;
+
+    curr = thread_current ();
+
+    curr -> nice = nice;
+    thread_calculate_recent_cpu ();
+    thread_calculate_priority ();
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+    return thread_current ()->nice;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+    return CONVERT_TO_INT_NEAR (100 * load_avg);
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+    return CONVERT_TO_INT_NEAR (100 * thread_current ()->recent_cpu);
 }
-
+
+void 
+thread_calculate_load_avg (void)
+{
+    int ready_threads;
+
+    if (thread_current () != idle_thread)
+      ready_threads = list_size (&ready_list);
+    else
+      ready_threads = list_size (&ready_list) + 1;
+    load_avg = FP_MUL (CONVERT_TO_FP (59)/60, load_avg) + CONVERT_TO_FP (1)/60*ready_list;
+}
+void
+thread_calculate_recent_cpu (void)
+{
+    thread_calculate_recent_cpu_other (thread_current ());
+}
+
+void
+thread_calculate_recent_cpu_for_all (void)
+{
+    struct list_elem *e;
+    struct thread *t;
+
+    e = list_begin (&all_list);
+    while (e != list_end (&all_list))
+    {
+        t = list_entry (e, struct thread, allelem);
+        thread_calculate_recent_cpu_other (t);
+        e = list_next (e);
+    }
+}
+//个人观点：可使用thread_func ()对所有线程遍历
+
+static void
+thread_calculate_recent_cpu_other (struct thread *curr)
+{
+    ASSERT (is_thread (curr));
+
+    if (curr == idle_thread)
+      return;
+
+    int load = 2 * load_avg;
+    curr->recent_cpu = INT_ADD (FP_MUL (FP_DIV (load, INT_ADD (load, 1)), curr->recent_cpu), curr->nice);
+}
+
+void 
+thread_calculate_priority_for_all (void)
+{
+    struct list_elem *e;
+    struct thread *t;
+
+    e = list_begin (&all_list);
+    while (e != list_end (&all_list))
+    {
+        t = list_entry (e, struct thread, allelem);
+        thread_calculate_priority_other (t);
+        e = list_next (e);
+    }
+    sort_thread_list (&ready_list);
+}
+
+void 
+thread_calculate_priority (void)
+{
+    thread_calculate_priority_other (thread_current ());
+}
+
+static void
+thread_calculate_priority_other (struct thread *curr)
+{
+    ASSERT (is_thread (curr));
+
+    if (curr == idle_thread)
+      return;
+
+    curr->priority = PRI_MAX - CONVERT_TO_INT_NEAR (curr->recent_cpu/4) - curr->nice*2;
+    if (curr->priority > PRI_MAX)
+      curr->priority = PRI_MAX;
+    else if (curr->priority < PRI_MIN)
+      curr->priority = PRI_MIN;
+    //是否应该加入求得优先级与现在线程优先级比较
+}
+/*==我的修改*/
 /* Idle thread.  Executes when no other thread is ready to run.
 
    The idle thread is initially put on the ready list by
@@ -560,11 +655,22 @@ init_thread (struct thread *t, const char *name, int priority)
     /*My Implementation*/
   
 
-  t->old_priority = t->priority = priority;
-  t->donated = false;
- 
+  if(!thread_mlfqs)
+  {
+      t->old_priority = t->priority = priority;
+      t->donated = false;
+  }
   t->blocked = NULL;
   list_init (&t->locks);
+  if(thread_mlfqs)
+  {
+      t->nice = NICE_DEFAULT;
+      if (t = initial_thread)
+        t->recent_cpu = 0;
+      else 
+        t->recent_cpu = thread_get_recent_cpu ();
+
+  }
   /*==My Implementation*/
   t->magic = THREAD_MAGIC;
   list_push_back (&all_list, &t->allelem);
@@ -709,5 +815,21 @@ sort_thread_list (struct list *l)
       return ;
 
     list_sort (l, pri_more, NULL);
+}
+
+struct thread *
+get_thread_by_tid (tid_t tid)
+{
+    struct list_elem *f;
+    struct thread *ret;
+
+    ret = NULL;
+    for (f = list_begin (&all_list); f != list_end(&all_list); f = list_next (f))
+    {
+        ret = list_entry (f, struct thread, allelem);
+        ASSERT (is_thread (ret));
+        if (ret->tid == tid)
+          return ret;
+    }
 }
 /*我的修改*/
