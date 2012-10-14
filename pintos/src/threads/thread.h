@@ -6,14 +6,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
- /*#### 我的修改 ####*/
 #include "threads/synch.h"
 
-void sort_thread_list (struct list *);
-void thread_set_priority_other (struct thread *, int , bool );
-void thread_set_priority (int ) ;
- /*#### 我的修改 ####*/
 /* States in a thread's life cycle. */
+
 enum thread_status
   {
     THREAD_RUNNING,     /* Running thread. */
@@ -32,8 +28,14 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
 
-/* A kernel thread or user process.
+/*我的修改*/
+#define NICE_MAX 20
+#define NICE_DEFAULT 0
+#define NICE_MIN -20
+/*==我的修改*/
 
+/* A kernel thread or user process.
+ 
    Each thread structure is stored in its own 4 kB page.  The
    thread structure itself sits at the very bottom of the page
    (at offset 0).  The rest of the page is reserved for the
@@ -103,6 +105,9 @@ struct thread
     bool donated;
     struct lock *blocked;                  //阻塞该线程的锁
     int64_t block_ticks; 
+
+    int recent_cpu;
+    int nice;
     /*#### 我的修改 ####*/
     
     int priority;                       /* Priority. */
@@ -155,5 +160,18 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+ /*#### 我的修改 ####*/
+
+void sort_thread_list (struct list *);
+void thread_set_priority_other (struct thread *, int , bool );
+void thread_set_priority (int ) ;
+
+void thread_calculate_load_avg (void);
+void thread_calculate_recent_cpu (void);
+void thread_calculate_priority (void);
+void thread_calculate_recent_cpu_for_all (void);
+struct thread * get_thread_by_tid (tid_t);
+ /*#### 我的修改 ####*/
 
 #endif /* threads/thread.h */

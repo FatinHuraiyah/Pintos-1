@@ -77,6 +77,10 @@ pri_more (const struct list_elem *a, const struct list_elem *b, void *aux);
 static bool
 pri_less (const struct list_elem *a, const struct list_elem *b, void *aux);
 
+static void thread_calculate_priority_other (struct thread *curr);
+static void thread_calculate_recent_cpu_other (struct thread *curr);
+
+static int load_avg;
 /*==我的修改*/
 
 /* Initializes the threading system by transforming the code
@@ -107,6 +111,10 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
+
+  /*我的修改*/
+  load_avg = 0;
+  /*==我的修改*/
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
