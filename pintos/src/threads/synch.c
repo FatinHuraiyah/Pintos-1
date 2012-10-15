@@ -234,7 +234,7 @@ lock_acquire (struct lock *lock)
   thrd = lock->holder;
   curr->blocked = another = lock;
 
-  while (thrd != NULL && thrd->priority < curr->priority)
+  while (!thread_mlfqs && thrd != NULL && thrd->priority < curr->priority)
   {
       thrd->donated = true;
       thread_set_priority_other(thrd, curr->priority, false);
@@ -256,7 +256,7 @@ lock_acquire (struct lock *lock)
   lock->holder = curr;
   curr->blocked = NULL;
   list_insert_ordered(&lock->holder->locks, &lock->holder_elem, outstanding_priority, NULL);
-  
+  //未为thread_mlfqs而改变
   intr_set_level (old_level);
 
 
@@ -314,8 +314,11 @@ lock_release (struct lock *lock)
   sema_up (&lock->semaphore);
 
   /*我的修改*/
+  //疑问所在？
   list_remove (&lock->holder_elem);
   lock->lock_priority = PRI_MIN -1;
+  if(!thread_mlfqs)
+  {
   if (list_empty (&curr->locks))
   {
       curr->donated = false;
@@ -329,8 +332,10 @@ lock_release (struct lock *lock)
         thread_set_priority_other (curr, another->lock_priority, false);
       else thread_set_priority (curr->old_priority);
   }
+  }
   intr_set_level (old_level);
   /*==我的修改*/
+  
 }
 
 /* Returns true if the current thread holds LOCK, false

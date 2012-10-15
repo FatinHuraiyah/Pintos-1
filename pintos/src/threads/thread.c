@@ -491,7 +491,7 @@ thread_calculate_load_avg (void)
       ready_threads = list_size (&ready_list);
     else
       ready_threads = list_size (&ready_list) + 1;
-    load_avg = FP_MUL (CONVERT_TO_FP (59)/60, load_avg) + CONVERT_TO_FP (1)/60*ready_list;
+    load_avg = FP_MUL (CONVERT_TO_FP (59)/60, load_avg) + CONVERT_TO_FP (1)/60*ready_threads;
 }
 void
 thread_calculate_recent_cpu (void)
