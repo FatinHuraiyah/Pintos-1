@@ -194,6 +194,9 @@ thread_create (const char *name, int priority,
   enum intr_level old_level;
 
   ASSERT (function != NULL);
+  
+  ASSERT (priority >= PRI_MIN && priority <= PRI_MAX);
+
 
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);
@@ -665,7 +668,7 @@ init_thread (struct thread *t, const char *name, int priority)
   if(thread_mlfqs)
   {
       t->nice = NICE_DEFAULT;
-      if (t = initial_thread)
+      if (t == initial_thread)
         t->recent_cpu = 0;
       else 
         t->recent_cpu = thread_get_recent_cpu ();
@@ -682,6 +685,7 @@ static void *
 alloc_frame (struct thread *t, size_t size) 
 {
   /* Stack data is always allocated in word-size units. */
+
   ASSERT (is_thread (t));
   ASSERT (size % sizeof (uint32_t) == 0);
 
@@ -831,5 +835,6 @@ get_thread_by_tid (tid_t tid)
         if (ret->tid == tid)
           return ret;
     }
+    return NULL;
 }
 /*我的修改*/
