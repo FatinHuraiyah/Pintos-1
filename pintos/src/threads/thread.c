@@ -453,7 +453,7 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice ) 
 {
-    ASSERT (nice > NICE_MIN && nice < NICE_MAX);
+    ASSERT (nice >= NICE_MIN && nice <= NICE_MAX);
 
     struct thread *curr;
 
@@ -491,9 +491,9 @@ thread_calculate_load_avg (void)
     int ready_threads;
 
     if (thread_current () != idle_thread)
-      ready_threads = list_size (&ready_list);
-    else
       ready_threads = list_size (&ready_list) + 1;
+    else
+      ready_threads = list_size (&ready_list);
     load_avg = FP_MUL (CONVERT_TO_FP (59)/60, load_avg) + CONVERT_TO_FP (1)/60*ready_threads;
 }
 void
