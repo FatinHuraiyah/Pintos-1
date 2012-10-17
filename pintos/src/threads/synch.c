@@ -330,7 +330,11 @@ lock_release (struct lock *lock)
       another = list_entry (l, struct lock, holder_elem);
       if (another->lock_priority != PRI_MIN - 1)
         thread_set_priority_other (curr, another->lock_priority, false);
-      else thread_set_priority (curr->old_priority);
+      else 
+      {
+		  thread_set_priority (curr->old_priority);
+		  //printf ("/n hello!\n\n\n");
+      }
   }
   }
   intr_set_level (old_level);

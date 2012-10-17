@@ -665,6 +665,7 @@ init_thread (struct thread *t, const char *name, int priority)
   }
   t->blocked = NULL;
   list_init (&t->locks);
+  t->block_ticks = 0; 
   if(thread_mlfqs)
   {
       t->nice = NICE_DEFAULT;
