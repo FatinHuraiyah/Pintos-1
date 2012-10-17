@@ -254,8 +254,14 @@ lock_acquire (struct lock *lock)
 
   /*我的修改*/
   lock->holder = curr;
-  curr->blocked = NULL;
-  list_insert_ordered(&lock->holder->locks, &lock->holder_elem, outstanding_priority, NULL);
+
+
+  if (!thread_mlfqs)
+   {
+	  curr->blocked = NULL;
+
+      list_insert_ordered(&lock->holder->locks, &lock->holder_elem, outstanding_priority, NULL);
+   }
   //未为thread_mlfqs而改变
   intr_set_level (old_level);
 
@@ -302,7 +308,8 @@ lock_release (struct lock *lock)
     enum intr_level old_level;
 
     curr = thread_current();
-    ASSERT (curr->blocked == NULL);
+    if (!thread_mlfqs)
+        ASSERT (curr->blocked == NULL);
 
     /*==我的修改*/
   ASSERT (lock != NULL);
@@ -315,27 +322,28 @@ lock_release (struct lock *lock)
 
   /*我的修改*/
   //疑问所在？
-  list_remove (&lock->holder_elem);
-  lock->lock_priority = PRI_MIN -1;
+
   if(!thread_mlfqs)
   {
-  if (list_empty (&curr->locks))
-  {
-      curr->donated = false;
-      thread_set_priority (curr->old_priority);
-  }
-  else 
-  {
-      l = list_back (&curr->locks);
-      another = list_entry (l, struct lock, holder_elem);
-      if (another->lock_priority != PRI_MIN - 1)
-        thread_set_priority_other (curr, another->lock_priority, false);
-      else 
-      {
-		  thread_set_priority (curr->old_priority);
-		  //printf ("/n hello!\n\n\n");
-      }
-  }
+	    list_remove (&lock->holder_elem);
+        lock->lock_priority = PRI_MIN -1;
+        if (list_empty (&curr->locks))
+        {
+           curr->donated = false;
+           thread_set_priority (curr->old_priority);
+        }
+        else 
+        {
+           l = list_back (&curr->locks);
+           another = list_entry (l, struct lock, holder_elem);
+           if (another->lock_priority != PRI_MIN - 1)
+              thread_set_priority_other (curr, another->lock_priority, false);
+           else 
+           {
+		      thread_set_priority (curr->old_priority);
+		      //printf ("/n hello!\n\n\n");
+           }
+        }
   }
   intr_set_level (old_level);
   /*==我的修改*/
