@@ -119,6 +119,14 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+
+    /*我的修改*/
+    struct semaphore wait;
+    int ret_status;
+    struct list files;
+    struct file *self;
+    struct thread *parent;
+    /*==我的修改*/
 #endif
 
     /* Owned by thread.c. */
@@ -153,6 +161,10 @@ void thread_yield (void);
 typedef void thread_action_func (struct thread *t, void *aux);
 void thread_foreach (thread_action_func *, void *);
 
+
+
+ /*#### 我的修改 ####*/
+ 
 int thread_get_priority (void);
 void thread_set_priority (int);
 
@@ -160,8 +172,6 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
-
- /*#### 我的修改 ####*/
 
 void sort_thread_list (struct list *);
 void thread_set_priority_other (struct thread *, int , bool );

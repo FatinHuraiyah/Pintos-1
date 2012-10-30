@@ -5,6 +5,11 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+/*我的修改*/
+#include "threads/vaddar.h"
+#include "userprog/syscall.h"
+/*==我的修改*/
+
 /* Number of page faults processed. */
 static long long page_fault_cnt;
 
@@ -127,6 +132,9 @@ page_fault (struct intr_frame *f)
   bool user;         /* True: access by user, false: access by kernel. */
   void *fault_addr;  /* Fault address. */
 
+  /*我的修改*/
+  struct thread *t;
+  /*==我的修改*/
   /* Obtain faulting address, the virtual address that was
      accessed to cause the fault.  It may point to code or to
      data.  It is not necessarily the address of the instruction
@@ -147,6 +155,12 @@ page_fault (struct intr_frame *f)
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
+
+  /*我的修改*/
+  t = thread_current ();
+  if (not_present || (is_kernel_vaddr (fault_addr) && user))
+      sys_exit (-1);
+  /*==我的修改*/
 
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to

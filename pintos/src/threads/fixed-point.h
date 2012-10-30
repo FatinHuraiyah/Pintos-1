@@ -2,13 +2,11 @@
 *     File Name           :     fixed-point.h
 *     Created By          :     raymond
 *     Creation Date       :     [2012-10-14 21:51]
-*     Last Modified       :     [2012-10-14 21:53]
+*     Last Modified       :     [2012-10-30 15:58]
 *     Licence             :     raymond (c) 2012 | all rights reserved
 *     Description         :      
 **********************************************************************************/
-/* This file is fully designed and created by Christopher Xu
- *  * See README at root directory for details
- *   */
+
  
 #ifndef THREADS_FIXED_POINT_H
 #define THREADS_FIXED_POINT_H
@@ -32,5 +30,4 @@
 
 
 #endif /* threads/fixed-point.h */
-
 

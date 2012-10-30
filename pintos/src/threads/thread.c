@@ -195,8 +195,14 @@ thread_create (const char *name, int priority,
 
   ASSERT (function != NULL);
   
+  /*我的修改*/
   ASSERT (priority >= PRI_MIN && priority <= PRI_MAX);
+#ifdef USERPROG
+  if (list_size (&all_list) >= 35) /*Maximum capacity of threads*/
+      return TID_ERROR;
+#endif
 
+  /*==我的修改*/
 
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);
@@ -247,6 +253,13 @@ thread_create (const char *name, int priority,
 
   if (priority > thread_current()->priority)
     thread_yield_head (thread_current ()); 
+
+#ifdef USERPROG
+  sema_init (&t->wait, 0);
+  t->ret_status = RET_STATUS_DEFAULT;
+  list_init (&t->files);
+  t->parent = NULL;
+#endif 
   /*==我的修改*/
 
   return tid;
@@ -341,6 +354,7 @@ thread_exit (void)
 
 #ifdef USERPROG
   process_exit ();
+  ASSERT (list_size (&thread_current ()->files) == 0);
 #endif
 
   /* Remove thread from all threads list, set our status to dying,
