@@ -6,7 +6,7 @@
 #include "threads/thread.h"
 
 /*我的修改*/
-#include "threads/vaddar.h"
+#include "threads/vaddr.h"
 #include "userprog/syscall.h"
 /*==我的修改*/
 

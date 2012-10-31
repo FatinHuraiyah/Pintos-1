@@ -19,7 +19,7 @@
 #include "threads/vaddr.h"
 
 /*我的修改*/
-#include "thread/malloc.h"
+#include "threads/malloc.h"
 #include "userprog/syscall.h"
 /*==我的修改*/
 
@@ -160,10 +160,10 @@ start_process (void *file_name_)
   }
   else 
   {
-      free (argc_off);
+      free (argv_off);
 exit:
       t->ret_status = -1;
-      sema_up (t->wait);
+      sema_up (&t->wait);
       intr_disable ();
       thread_block ();
       intr_enable ();
@@ -204,7 +204,7 @@ process_wait (tid_t child_tid UNUSED)
     int ret;
 
     t = get_thread_by_tid (child_tid);
-    if (!t || t->status == THREAD_DYING || t->parent == thread_curent ())
+    if (!t || t->status == THREAD_DYING || t->parent == thread_current ())
         return -1;
     if (t->ret_status != RET_STATUS_DEFAULT)
         return t->ret_status;
@@ -216,7 +216,7 @@ process_wait (tid_t child_tid UNUSED)
     ret = t->ret_status;
     printf ("%s: exit(%d)\n", t->name, t->ret_status);
     while (t->status == THREAD_BLOCKED)
-        thread_unblock ();
+        thread_unblock (t);
 
     return ret;
   /*==我的修改*/
